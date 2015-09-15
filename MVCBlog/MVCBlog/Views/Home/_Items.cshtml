@@ -1,0 +1,10 @@
+﻿@model IEnumerable<MVCBlog.Models.MessageEntity>
+
+@foreach (var item in Model)
+{
+    <div>
+        <h3>@item.Login</h3>
+        <p>@item.Date</p>
+        <p>@item.Message</p>
+    </div>
+}

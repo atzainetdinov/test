@@ -1,0 +1,157 @@
+﻿@{
+    ViewBag.Title = "Блог";
+}
+
+<h1>Блог</h1>
+<div class="panel panel-primary">
+
+    <div class="panel-body">
+        <div data-spy="scroll" id="scrolList"
+             @*<div data-spy="scroll" id="scrolDiv"*@
+             data-target="#navbar-example"
+             data-offset="10"
+             style="height:300px;
+                                      overflow:auto;
+                                      position: relative;
+                                      padding: 10px;">
+            @*<div id="scrolList">*@
+            @Html.Partial("_Items")
+        </div>
+        @*</div>*@
+        @*<button id="btnOldMes">Предыдущие сообщения</button>*@
+        <div id="loading"><img src='@Url.Content("~/Content/loading_spinner.gif")'></div>
+        <script type="text/javascript">
+            function GetPage(page) {
+                $.ajax({
+                    type: 'GET',
+                    url: '/Blog/Index/' + page,
+                    success: function (data) {
+
+                        $("#scrolList").empty();
+                        if (data != '') {
+                            $("#scrolList").append(data);
+                        }
+                        else {
+                            page = -1;
+                        }
+                        // _inCallback = true;
+                        $("div#loading").hide();
+                    }
+                });
+            }
+            $(function () {
+
+                $('div#loading').hide();
+                //var page = 0;
+                //var _inCallback = false;
+
+                //function loadItems() {
+                //    if (page > -1 && !_inCallback) {
+                //        _inCallback = true;
+                //        page++;
+                //        $('div#loading').show();
+                //        GetPage(page);
+                //    }
+                //}
+
+                //   $("#btnOldMes").click(function () {
+                //    loadItems();
+                //});
+
+                $(document).ready(function () {
+                    $.periodic({
+                        period: 1000,
+                        decay: 1.2,
+                        max_period: 10000
+                    }, function () {
+                        GetPage(0);
+                    });
+                });
+
+                // //обработка события скроллинга
+                //$(window).scroll(function () {
+                //    if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+                //        loadItems();
+                //    }
+                //});
+
+                //$("#scrolList").scroll(function() {
+                //    var height1 = $("#scrolList").scrollTop();
+                //    var height2 = $("#scrolList").height();
+                //    if ($("#scrolList").scrollTop() > $("#scrolList").height()) {
+                //        loadItems();
+                //    }
+                // });
+            });
+        </script>
+    </div>
+    <div class="panel-footer">
+        <div class="input-group">
+            <input class="form-control" id="text"> </input>
+            <span class="input-group-btn">
+                <button class="btn btn-warning btn-sm" id="btn-chat" onclick="AddMessage()">
+                    Отправить
+                </button>
+            </span>
+        </div>
+    </div>
+</div>
+<script>
+    function AddMessage() {
+        var req = getXmlHttp();
+        var text = $("#text").val();
+        if (text.length > 0) {
+            document.getElementById('text').value = '';
+            var params = 'text=' + text;
+            req.open('POST', '/Blog/AddMessage?' + params, true);
+            req.send(params);
+            var timeout = setTimeout(function () {
+                req.abort();
+                handleError("Time over");
+            }, 99999);
+            req.onreadystatechange = function () {
+                if (req.readyState != 4) return;
+
+                clearTimeout(timeout); // очистить таймаут при наступлении readyState 4
+
+                if (req.status == 200) {
+                    // Все ок
+                    window.GetPage(0);
+                } else {
+                    handleError(req.statusText); // вызвать обработчик ошибки с текстом ответа
+                }
+            };
+        } else {
+            alert("Ошибка: Введите сообщение");
+        }
+
+    }
+
+    function handleError(message) {
+        // обработчик ошибки
+
+        alert("Ошибка: " + message);
+
+    }
+    function getXmlHttp() {
+        var xmlhttp;
+        try {
+            xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+        } catch (e) {
+            try {
+                xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+            } catch (E) {
+                xmlhttp = false;
+            }
+        }
+        if (!xmlhttp && typeof XMLHttpRequest != 'undefined') {
+            xmlhttp = new XMLHttpRequest();
+        }
+        return xmlhttp;
+    }
+</script>
+
+
+
+
+
